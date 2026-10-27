@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>咖啡豆產地衛星地圖 (Esri WorldImagery)</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    body, html { margin: 0; padding: 0; height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #000; }
+    #map { width: 100%; height: 100%; }
+    
+    /* 配合衛星深色底圖的彈出卡片樣式 */
+    .leaflet-popup-content-wrapper {
+      background: rgba(28, 28, 30, 0.92);
+      color: #f5f5f7;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      backdrop-filter: blur(8px);
+    }
+    .leaflet-popup-tip {
+      background: rgba(28, 28, 30, 0.92);
+    }
+    .coffee-popup { font-size: 13px; line-height: 1.5; padding: 2px 4px; }
+    .coffee-popup h3 { margin: 0 0 6px 0; color: #ffcc80; font-size: 15px; border-bottom: 1px solid rgba(255, 204, 128, 0.3); padding-bottom: 4px; }
+    .tag { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-bottom: 6px; font-weight: bold; }
+    .tag-ethiopia { background: rgba(255, 152, 0, 0.25); color: #ffb74d; border: 1px solid #ff9800; }
+    .tag-kenya { background: rgba(233, 30, 99, 0.25); color: #f48fb1; border: 1px solid #e91e63; }
+    .tag-blend { background: rgba(141, 110, 99, 0.3); color: #d7ccc8; border: 1px solid #8d6e63; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <script>
+    // 初始化地圖視角
+    const map = L.map('map', { zoomControl: true }).setView([5, 35], 3);
+
+    // 載入 Esri.WorldImagery 衛星影像圖層
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+      maxZoom: 18
+    }).addTo(map);
+
+    // 標示南北回歸線「咖啡帶 (Coffee Belt)」
+    L.rectangle([[-23.5, -180], [23.5, 180]], {
+      color: "#ffd54f",
+      weight: 1,
+      dashArray: "5, 8",
+      fillColor: "#fff8e1",
+      fillOpacity: 0.08,
+      interactive: false
+    }).addTo(map);
+
+    const origins = [
+      {
+        name: "耶加雪菲 (Yirgacheffe)",
+        tag: "衣索比亞產區",
+        tagClass: "tag-ethiopia",
+        color: "#ff9800",
+        coords: [6.16, 38.20],
+        desc: "<b>風味特徵：</b>細緻白花香、柑橘、佛手柑紅茶清爽酸質。<br><b>地貌特徵：</b>東非大裂谷南端高海拔山區（1,800–2,200m）。"
+      },
+      {
+        name: "藝妓 / 瑰夏原產地 (Gesha)",
+        tag: "衣索比亞原生種",
+        tagClass: "tag-ethiopia",
+        color: "#ffb74d",
+        coords: [6.54, 35.50],
+        desc: "<b>風味特徵：</b>水蜜桃、荔枝、佛手柑、接骨木花。<br><b>地貌特徵：</b>西南部的葛夏原始森林，未馴化的古老野生阿拉比卡基因庫。"
+      },
+      {
+        name: "西達摩 (Sidama)",
+        tag: "衣索比亞產區",
+        tagClass: "tag-ethiopia",
+        color: "#ffa726",
+        coords: [6.70, 38.50],
+        desc: "<b>風味特徵：</b>熱帶水果、杏桃、藍莓，圓潤蜂蜜甜感。<br><b>地貌特徵：</b>環繞阿瓦薩湖周邊的廣闊高原與陡峭山坡。"
+      },
+      {
+        name: "肯亞高地 (Kenya)",
+        tag: "東非火山帶",
+        tagClass: "tag-kenya",
+        color: "#e91e63",
+        coords: [-0.42, 36.95],
+        desc: "<b>風味特徵：</b>黑醋栗、烏梅、黑莓，立體果酸與紅酒醇厚感。<br><b>地貌特徵：</b>肯亞山死火山周圍的深紅火山沃土。"
+      },
+      {
+        name: "曼巴 — 曼特寧 (Mandheling)",
+        tag: "曼巴配方（醇厚支柱）",
+        tagClass: "tag-blend",
+        color: "#8d6e63",
+        coords: [-0.59, 101.34],
+        desc: "<b>產地：</b>印尼蘇門答臘<br><b>風味特徵：</b>草本、雪松、深黑巧克力、極低酸度。<br><b>地貌特徵：</b>赤道貫穿的火山雨林島嶼，潮濕氣候促成濕剝法工藝。"
+      },
+      {
+        name: "曼巴 — 巴西 (Brazil)",
+        tag: "曼巴配方（溫潤調和）",
+        tagClass: "tag-blend",
+        color: "#a1887f",
+        coords: [-18.51, -44.55],
+        desc: "<b>產地：</b>巴西米納斯吉拉斯<br><b>風味特徵：</b>烤堅果、炒花生、焦糖甜感。<br><b>地貌特徵：</b>廣大起伏的內陸高原，適合大規模日曬處理。"
+      }
+    ];
+
+    origins.forEach(item => {
+      const marker = L.circleMarker(item.coords, {
+        radius: 8,
+        fillColor: item.color,
+        color: '#ffffff',
+        weight: 2,
+        opacity: 1,
+        fillOpacity: 0.95
+      }).addTo(map);
+
+      const content = `
+        <div class="coffee-popup">
+          <span class="tag ${item.tagClass}">${item.tag}</span>
+          <h3>${item.name}</h3>
+          <p>${item.desc}</p>
+        </div>
+      `;
+      marker.bindPopup(content);
+    });
+  </script>
+</body>
+</html>
